@@ -1,0 +1,48 @@
+services:
+  auth-service:
+    build:
+      context: ./apps/auth-service
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - JWT_SECRET=67a0be09c...
+      - DATABASE_URL=postgresql://flapinski:cyckidupcia@postgres:5432/wordmaster
+      - REDIS_URL=redis://redis:6379
+      - EMAIL_USER=lapafifi@gmail.com
+      - EMAIL_PASS=snjt thne aazp kwip
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - wordmaster-net
+
+  postgres:
+    image: postgres:14
+    container_name: wordmaster-postgres
+    restart: always
+    ports:
+      - "15432:15432"
+    environment:
+      POSTGRES_USER: flapinski
+      POSTGRES_PASSWORD: cyckidupcia
+      POSTGRES_DB:  wordmaster
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - wordmaster-net
+  redis:
+    image: redis:7
+    container_name: wordmaster-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - wordmaster-net
+
+networks:
+  wordmaster-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
