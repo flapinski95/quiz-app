@@ -1,0 +1,10 @@
+{
+    "realm": "quiz-app",
+    "auth-server-url": "http://localhost:8080",
+    "ssl-required": "none",
+    "resource": "gateway-service",
+    "credentials": {
+      "secret": "OSobURtRQEGFpGElA6noumzNlFzurtgr"
+    },
+    "confidential-port": 0
+  }

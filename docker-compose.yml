@@ -1,22 +1,41 @@
 services:
-  auth-service:
+  gateway-service:
     build:
-      context: ./apps/auth-service
-    container_name: auth-service
+      context: ./apps/gateway-service
+    container_name: gateway-service
     ports:
       - "3001:3001"
     environment:
       - PORT=3001
-      - JWT_SECRET=67a0be09c...
-      - DATABASE_URL=postgresql://flapinski:cyckidupcia@postgres:5432/wordmaster
-      - REDIS_URL=redis://redis:6379
-      - EMAIL_USER=lapafifi@gmail.com
-      - EMAIL_PASS=snjt thne aazp kwip
-    depends_on:
-      - postgres
-      - redis
     networks:
       - wordmaster-net
+      - app-net
+    depends_on:
+      - keycloak
+  frontend-service:
+    build:
+      context: ./apps/frontend-service
+    container_name: frontend-service
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    networks:
+      - app-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+    networks:
+      - app-net
 
   postgres:
     image: postgres:14
@@ -27,11 +46,12 @@ services:
     environment:
       POSTGRES_USER: flapinski
       POSTGRES_PASSWORD: cyckidupcia
-      POSTGRES_DB:  wordmaster
+      POSTGRES_DB: wordmaster
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - wordmaster-net
+
   redis:
     image: redis:7
     container_name: wordmaster-redis
@@ -43,6 +63,9 @@ services:
 networks:
   wordmaster-net:
     driver: bridge
+  app-net:
+    driver: bridge
 
 volumes:
   postgres-data:
+  keycloak-data:
