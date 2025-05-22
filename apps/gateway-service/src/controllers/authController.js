@@ -41,6 +41,21 @@ exports.register = async (req, res) => {
     );
 
     res.status(201).json({ message: "Zarejestrowano" });
+    const users = await axios.get(
+        `http://keycloak:8080/admin/realms/quiz-app/users?username=${username}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const userId = users.data[0].id;
+    await axios.put(
+        `http://keycloak:8080/admin/realms/quiz-app/users/${userId}/execute-actions-email`,
+        ['VERIFY_EMAIL'],
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
   } catch (err) {
     console.error("Błąd rejestracji:", err?.response?.data || err.message);
     res.status(500).json({ message: "Rejestracja nieudana" });
