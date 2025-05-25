@@ -1,37 +1,85 @@
 services:
-  auth-service:
+  gateway-service:
     build:
-      context: ./apps/auth-service
-    container_name: auth-service
+      context: ./apps/gateway-service
+    container_name: gateway-service
     ports:
       - "3001:3001"
     environment:
       - PORT=3001
-      - JWT_SECRET=67a0be09c...
-      - DATABASE_URL=postgresql://flapinski:cyckidupcia@postgres:5432/wordmaster
-      - REDIS_URL=redis://redis:6379
-      - EMAIL_USER=lapafifi@gmail.com
-      - EMAIL_PASS=snjt thne aazp kwip
+    networks:
+      - wordmaster-net
+      - app-net
     depends_on:
-      - postgres
-      - redis
-    networks:
-      - wordmaster-net
-
-  postgres:
-    image: postgres:14
-    container_name: wordmaster-postgres
-    restart: always
+      - keycloak
+  frontend-service:
+    build:
+      context: ./apps/frontend-service
+    container_name: frontend-service
     ports:
-      - "15432:15432"
+      - "3000:3000"
     environment:
-      POSTGRES_USER: flapinski
-      POSTGRES_PASSWORD: cyckidupcia
-      POSTGRES_DB:  wordmaster
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - PORT=3000
     networks:
-      - wordmaster-net
+      - app-net
+  # postgres:
+  #   image: postgres:14
+  #   container_name: postgres
+  #   restart: always
+  #   ports:
+  #     - "15432:5432"
+  #   environment:
+  #     POSTGRES_USER: flapinski
+  #     POSTGRES_PASSWORD: cyckidupcia
+  #     POSTGRES_DB: wordmaster
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - wordmaster-net
+  #   healthcheck:
+  #     test: ["CMD", "pg_isready", "-U", "flapinski"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  keycloak-db:
+    image: postgres:14
+    container_name: keycloak-db
+    restart: always
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: keycloakdb
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - app-net
+
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    command: 
+      - start-dev
+      - --hostname-strict=false
+      - --hostname-url=http://localhost/auth
+      - --hostname-admin-url=http://localhost/auth
+      - --db=postgres
+      - --db-url=jdbc:postgresql://keycloak-db:5432/keycloakdb
+      - --db-username=keycloak
+      - --db-password=securepassword
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    depends_on:
+      - keycloak-db
+    networks:
+      - app-net
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+  
+
   redis:
     image: redis:7
     container_name: wordmaster-redis
@@ -39,10 +87,25 @@ services:
       - "6379:6379"
     networks:
       - wordmaster-net
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - keycloak
+    networks:
+      - app-net
 
 networks:
   wordmaster-net:
     driver: bridge
+  app-net:
+    driver: bridge
 
 volumes:
   postgres-data:
+  keycloak-data:
+  keycloak-db-data:
