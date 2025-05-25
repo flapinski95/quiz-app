@@ -6,24 +6,25 @@ const proxyRoutes = require('./routes/proxy.routes');
 const secureRoutes = require('./routes/secure.routes');
 const publicRoutes = require('./routes/public.routes');
 const authRoutes = require('./routes/auth.routes');
+const keycloakConfig = require('../keycloak.config');
 
 const app = express();
 const memoryStore = new session.MemoryStore();
 const cors = require('cors');
 
 app.use(cors({
-  origin: 'http://localhost:3000', // lub ['http://localhost:3000']
+  origin: 'http://localhost:3000', 
   credentials: true,
 }));
 
 app.use(session({
-  secret: 'supersecret',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
   store: memoryStore
 }));
 
-const keycloak = new Keycloak({ store: memoryStore });
+const keycloak = new Keycloak({ store: memoryStore }, keycloakConfig);
 app.use(keycloak.middleware());
 
 app.use(express.json());
