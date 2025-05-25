@@ -22,35 +22,61 @@ services:
       - PORT=3000
     networks:
       - app-net
+  # postgres:
+  #   image: postgres:14
+  #   container_name: postgres
+  #   restart: always
+  #   ports:
+  #     - "15432:5432"
+  #   environment:
+  #     POSTGRES_USER: flapinski
+  #     POSTGRES_PASSWORD: cyckidupcia
+  #     POSTGRES_DB: wordmaster
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - wordmaster-net
+  #   healthcheck:
+  #     test: ["CMD", "pg_isready", "-U", "flapinski"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  keycloak-db:
+    image: postgres:14
+    container_name: keycloak-db
+    restart: always
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: keycloakdb
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - app-net
+
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.1
     container_name: keycloak
     ports:
       - "8080:8080"
+    command:
+      - start-dev
+      
+      - --db=postgres
+      - --db-url=jdbc:postgresql://keycloak-db:5432/keycloakdb
+      - --db-username=keycloak
+      - --db-password=securepassword
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    command: start-dev
-    volumes:
-      - keycloak-data:/opt/keycloak/data
+    depends_on:
+      - keycloak-db
     networks:
       - app-net
-
-  postgres:
-    image: postgres:14
-    container_name: wordmaster-postgres
-    restart: always
-    ports:
-      - "15432:15432"
-    environment:
-      POSTGRES_USER: flapinski
-      POSTGRES_PASSWORD: cyckidupcia
-      POSTGRES_DB: wordmaster
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - wordmaster-net
+      - keycloak-data:/opt/keycloak/data
+  
 
   redis:
     image: redis:7
@@ -69,3 +95,4 @@ networks:
 volumes:
   postgres-data:
   keycloak-data:
+  keycloak-db-data:

@@ -4,7 +4,7 @@
     "ssl-required": "none",
     "resource": "gateway-service",
     "credentials": {
-      "secret": "OSobURtRQEGFpGElA6noumzNlFzurtgr"
+      "secret": "mjIu5pTeed0gcEfbe8Et58bf4Vo1yMHD"
     },
     "confidential-port": 0
   }
