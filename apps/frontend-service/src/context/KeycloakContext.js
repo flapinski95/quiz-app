@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import keycloak from "../../lib/keycloak";
+import keycloak from "../lib/keycloak";
 
 const KeycloakContext = createContext();
 
@@ -9,6 +9,15 @@ export const KeycloakProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const localToken = localStorage.getItem("token");
+
+    if (localToken) {
+      localStorage.setItem("auth_method", "api");
+      setAuthenticated(true);
+      setLoading(false);
+      return;
+    }
+
     keycloak
       .init({
         onLoad: "check-sso",
@@ -16,6 +25,9 @@ export const KeycloakProvider = ({ children }) => {
         flow: "standard",
       })
       .then((auth) => {
+        if (auth) {
+          localStorage.setItem("auth_method", "keycloak");
+        }
         setAuthenticated(auth);
         setLoading(false);
       })
@@ -26,7 +38,7 @@ export const KeycloakProvider = ({ children }) => {
   }, []);
 
   return (
-    <KeycloakContext.Provider value={{ keycloak, authenticated, loading }}>
+    <KeycloakContext.Provider value={{ keycloak, authenticated, loading, setAuthenticated }}>
       {children}
     </KeycloakContext.Provider>
   );

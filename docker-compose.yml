@@ -7,6 +7,7 @@ services:
       - "3001:3001"
     environment:
       - PORT=3001
+
     networks:
       - wordmaster-net
       - app-net
@@ -20,27 +21,42 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
+    volumes:
+      - ./apps/frontend-service:/app
+      - /app/node_modules
+    command: npm run dev
     networks:
       - app-net
-  # postgres:
-  #   image: postgres:14
-  #   container_name: postgres
-  #   restart: always
-  #   ports:
-  #     - "15432:5432"
-  #   environment:
-  #     POSTGRES_USER: flapinski
-  #     POSTGRES_PASSWORD: cyckidupcia
-  #     POSTGRES_DB: wordmaster
-  #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data
-  #   networks:
-  #     - wordmaster-net
-  #   healthcheck:
-  #     test: ["CMD", "pg_isready", "-U", "flapinski"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
+      - wordmaster-net
+  user-service:
+    build:
+      context: ./apps/user-service
+    container_name: user-service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - DATABASE_URL=postgresql://flapinski:cyckidupcia@postgres:5432/wordmaster
+    depends_on:
+      - postgres
+    networks:
+      - wordmaster-net
+      - app-net
+
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    restart: always
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_USER: flapinski
+      POSTGRES_PASSWORD: cyckidupcia
+      POSTGRES_DB: wordmaster
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - wordmaster-net
   keycloak-db:
     image: postgres:14
     container_name: keycloak-db
@@ -87,6 +103,18 @@ services:
       - "6379:6379"
     networks:
       - wordmaster-net
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: quizdb
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - wordmaster-net
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -97,6 +125,20 @@ services:
     depends_on:
       - keycloak
     networks:
+      - app-net
+  quiz-service:
+    build:
+      context: ./apps/quiz-service
+    container_name: quiz-service
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongo:27017/quizdb
+    depends_on:
+      - mongo
+    networks:
+      - wordmaster-net
       - app-net
 
 networks:
@@ -109,3 +151,5 @@ volumes:
   postgres-data:
   keycloak-data:
   keycloak-db-data:
+  user-db-data:
+  mongo-data:

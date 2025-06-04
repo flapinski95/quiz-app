@@ -2,8 +2,12 @@ import axios from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../lib/axios"; 
+import { useRouter } from "next/navigation";
+import { useKeycloakContext } from "@/context/KeycloakContext";
 
 export default function LoginForm() {
+  const { keycloak, authenticated, loading, setAuthenticated } = useKeycloakContext();
+  const router = useRouter()
   const formik = useFormik({
     initialValues: {
       username: "",
@@ -15,9 +19,17 @@ export default function LoginForm() {
     }),
     onSubmit: async (values) => {
       try {
-        const res = await api.post("/api/auth/login", values);
+        const res = await api.post("/api/auth/login", values, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
         console.log("Zalogowano:", res.data);
-        alert("Zalogowano!");
+        localStorage.setItem("token", res.data.access_token);
+        localStorage.setItem("auth_method", "api");
+        localStorage.setItem("username", res.data.username); 
+        setAuthenticated(true);
+        router.push("/home"); 
       } catch (err) {
         console.error("Błąd logowania:", err.response?.data || err.message);
         alert("Logowanie nieudane");
@@ -29,13 +41,12 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      <h2>Zaloguj się</h2>
       <input
         type="username"
         name="username"
         placeholder="Username"
         onChange={formik.handleChange}
-        value={formik.values.email}
+        value={formik.values.username}
       />
       {formik.touched.email && formik.errors.email && <div>{formik.errors.email}</div>}
 

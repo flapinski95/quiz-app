@@ -3,8 +3,10 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import api from "../lib/axios"; 
+import { useRouter } from "next/navigation";
 
 export default function RegisterForm() {
+    const router = useRouter()
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -21,6 +23,7 @@ export default function RegisterForm() {
       try {
         const response = await api.post("/api/auth/register", values);
         alert("Zarejestrowano!");
+        router.push("/"); 
       } catch (err) {
         console.error("Błąd rejestracji:", err.response?.data || err.message);
         alert("Rejestracja nieudana: " + (err.response?.data?.message || "Nieznany błąd"));
