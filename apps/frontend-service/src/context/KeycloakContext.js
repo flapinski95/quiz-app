@@ -11,30 +11,46 @@ export const KeycloakProvider = ({ children }) => {
   useEffect(() => {
     const localToken = localStorage.getItem("token");
 
-    if (localToken) {
-      localStorage.setItem("auth_method", "api");
-      setAuthenticated(true);
-      setLoading(false);
-      return;
-    }
-
     keycloak
       .init({
         onLoad: "check-sso",
+        silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
         pkceMethod: "S256",
         flow: "standard",
       })
       .then((auth) => {
-        if (auth) {
-          localStorage.setItem("auth_method", "keycloak");
+        if (auth && keycloak.token) {
+          localStorage.setItem("token", keycloak.token);
+          setAuthenticated(true);
+        } else {
+          localStorage.removeItem("token");
+          setAuthenticated(false);
         }
-        setAuthenticated(auth);
         setLoading(false);
       })
       .catch(() => {
+        localStorage.removeItem("token");
         setAuthenticated(false);
         setLoading(false);
       });
+
+    const interval = setInterval(() => {
+      if (keycloak.authenticated) {
+        keycloak
+          .updateToken(60)
+          .then((refreshed) => {
+            if (refreshed && keycloak.token) {
+              localStorage.setItem("token", keycloak.token);
+            }
+          })
+          .catch(() => {
+            console.warn("Token wygasł – wylogowuję");
+            keycloak.logout();
+          });
+      }
+    }, 60000); 
+
+    return () => clearInterval(interval);
   }, []);
 
   return (

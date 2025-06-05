@@ -6,10 +6,10 @@ const authenticate = require('../middleware/authenticate');
 const extractUser = require('../middleware/extractUser');
 
 
-router.get('/me',  getMyProfile);
-router.put('/me',  updateMyProfile);
-router.post('/me/avatar',  updateMyAvatar);
-router.get('/avatar-signature', getCloudinarySignature);
+router.get('/me',  extractUser, getMyProfile);
+router.put('/me',  extractUser, updateMyProfile);
+router.post('/me/avatar', extractUser,  updateMyAvatar);
+router.get('/avatar-signature', extractUser, getCloudinarySignature);
 router.get('/health', (req, res) => {
     res.send('user-service OK');
   });

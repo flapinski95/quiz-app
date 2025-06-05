@@ -1,6 +1,8 @@
-export async function uploadAvatar(file) {
+import keycloak from "@/lib/keycloak";
+
+export default async function uploadAvatar(file) {
     const res = await fetch('/api/users/avatar-signature', {
-      headers: { Authorization: `Bearer ${yourJwtToken}` }
+      headers: { Authorization: `Bearer ${keycloak.token}` }
     });
     const { timestamp, signature, apiKey, cloudName } = await res.json();
   

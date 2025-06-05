@@ -1,18 +1,19 @@
 services:
   gateway-service:
     build:
-      context: ./apps/gateway-service
+      context: ./apps/gateway-service1
+    depends_on:
+      - keycloak
     container_name: gateway-service
     ports:
       - "3001:3001"
     environment:
       - PORT=3001
-
+      - KEYCLOAK_CLIENT_SECRET=mjIu5pTeed0gcEfbe8Et58bf4Vo1yMHD
+      - DEBUG=keycloak-connect:*
     networks:
       - wordmaster-net
       - app-net
-    depends_on:
-      - keycloak
   frontend-service:
     build:
       context: ./apps/frontend-service
@@ -73,6 +74,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.1
+    hostname: keycloak
     container_name: keycloak
     ports:
       - "8080:8080"

@@ -5,8 +5,8 @@ import { useKeycloakContext } from '@/context/KeycloakContext';
 import { useRouter } from 'next/navigation';
 import { Formik, Form, Field } from 'formik';
 import styles from '../page.module.css';
-import api from '@/lib/axios';
-import uploadAvatar from '@/utils/uploadAvatar'; 
+import api from '../../lib/axios';
+import uploadAvatar from '../../utils/uploadAvatar';
 
 export default function UserProfilePage() {
   const { keycloak, authenticated, loading } = useKeycloakContext();
@@ -20,20 +20,17 @@ export default function UserProfilePage() {
     }
   }, [authenticated, loading]);
 
-  // Pobierz dane użytkownika z backendu
   useEffect(() => {
     const fetchProfile = async () => {
+      console.log(keycloak.token);
+      console.log(keycloak.tokenParsed)
+      
       try {
-        const token = keycloak.token;
-        console.log("Token:", keycloak.token);
-        console.log("Token decoded:", keycloak.tokenParsed);
-
         const response = await api.get('/api/users/me', {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${keycloak.token}`,
           },
         });
-
         setProfile(response.data);
       } catch (err) {
         console.error('Błąd pobierania profilu:', err);
@@ -45,19 +42,20 @@ export default function UserProfilePage() {
     }
   }, [authenticated]);
 
-  // Aktualizacja awatara
   const handleAvatarUpdate = async (values, { setSubmitting }) => {
     try {
-      const token = keycloak.token;
+      let avatarUrl = values.avatarUrl;
+      console.log(keycloak.token);
+      if (values.file) {
+        avatarUrl = await uploadAvatar(values.file); 
+      }
 
       const response = await api.post(
         '/api/users/me/avatar',
-        { avatarUrl: values.avatarUrl },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { avatarUrl },
+        { headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+        }}
       );
 
       setProfile(response.data);
@@ -71,7 +69,7 @@ export default function UserProfilePage() {
 
   if (loading || !authenticated || !profile) return <p>Ładowanie...</p>;
 
-  const username = keycloak.tokenParsed?.preferred_username || 'Nieznany';
+  const username = profile.username || keycloak.tokenParsed?.preferred_username || 'Nieznany';
 
   return (
     <div className={styles.profileContainer}>
@@ -81,71 +79,43 @@ export default function UserProfilePage() {
         alt="avatar"
         className={styles.avatar}
       />
-      <p>
-        <strong>Nazwa użytkownika:</strong> {username}
-      </p>
+      <p><strong>Nazwa użytkownika:</strong> {username}</p>
 
       {!isEditing ? (
         <button onClick={() => setIsEditing(true)}>Edytuj awatar</button>
       ) : (
         <Formik
-  initialValues={{ avatarUrl: profile.avatarUrl || '', file: null }}
-  enableReinitialize
-  onSubmit={async (values, { setSubmitting }) => {
-    try {
-      const token = keycloak.token;
+          initialValues={{ avatarUrl: profile.avatarUrl || '', file: null }}
+          enableReinitialize
+          onSubmit={handleAvatarUpdate}
+        >
+          {({ isSubmitting, setFieldValue }) => (
+            <Form className={styles.profileForm}>
+              <label>
+                Avatar URL (opcjonalnie):
+                <Field type="text" name="avatarUrl" />
+              </label>
 
-      let avatarUrl = values.avatarUrl;
+              <label>
+                Lub wybierz plik:
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) =>
+                    setFieldValue('file', event.currentTarget.files[0])
+                  }
+                />
+              </label>
 
-      // Jeśli wybrano plik, to uploaduj do Cloudinary
-      if (values.file) {
-        avatarUrl = await uploadAvatar(values.file, token);
-      }
-
-      const response = await api.post(
-        '/api/users/me/avatar',
-        { avatarUrl },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setProfile(response.data);
-      setIsEditing(false);
-    } catch (err) {
-      console.error('Błąd aktualizacji awatara:', err);
-    } finally {
-      setSubmitting(false);
-    }
-  }}
->
-  {({ isSubmitting, setFieldValue }) => (
-    <Form className={styles.profileForm}>
-      <label>
-        Avatar URL (opcjonalnie):
-        <Field type="text" name="avatarUrl" />
-      </label>
-
-      <label>
-        Lub wybierz plik:
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(event) =>
-            setFieldValue('file', event.currentTarget.files[0])
-          }
-        />
-      </label>
-
-      <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Zapisywanie...' : 'Zapisz'}
-      </button>
-      <button type="button" onClick={() => setIsEditing(false)}>
-        Anuluj
-      </button>
-    </Form>
-  )}
-</Formik>
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Zapisywanie...' : 'Zapisz'}
+              </button>
+              <button type="button" onClick={() => setIsEditing(false)}>
+                Anuluj
+              </button>
+            </Form>
+          )}
+        </Formik>
       )}
     </div>
   );
