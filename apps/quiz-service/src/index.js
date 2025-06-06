@@ -18,8 +18,8 @@ app.use(cors({
 connectDB();
 
 
-app.use('/', quizRoutes);
-app.use('/api', questionRoutes);
+app.use('', quizRoutes);
+app.use('', questionRoutes);
 
 const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => console.log(`Quiz service running on port ${PORT}`));

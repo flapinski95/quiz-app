@@ -9,11 +9,6 @@ const quizSchema = new mongoose.Schema({
   isPublic: { type: Boolean, default: true },
   tags: [String],
   category: String,
-  comments: [{
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    text: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
-  }],
   questions: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Question',

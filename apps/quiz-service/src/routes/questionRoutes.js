@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const questionController = require('../controllers/questionController');
 const auth = require('../middlewares/auth');
+const extractUser = require('../middlewares/extractUser');
 
-router.post('/quizzes/:quizId/questions', questionController.addQuestionToQuiz);
-router.get('/quizzes/:quizId/questions', questionController.getQuestionsForQuiz);
-router.delete('/questions/:id', questionController.deleteQuestion);
+
+router.post('/:quizId/questions', extractUser, questionController.addQuestionToQuiz);
+router.get('/:quizId/questions', extractUser, questionController.getQuestionsForQuiz);
+router.delete('/questions/:id', extractUser, questionController.deleteQuestion);
 
 module.exports = router;

@@ -1,9 +1,14 @@
-"use client";
-import { useState } from 'react';
-import api from '../lib/axios'; 
+'use client';
+
+import { Formik, Form, Field } from 'formik';
+import QuestionForm from './QuestionForm';
+import api from '../lib/axios';
+import { useKeycloakContext } from '@/context/KeycloakContext';
 
 export default function QuizForm() {
-  const [quizData, setQuizData] = useState({
+  const { keycloak } = useKeycloakContext();
+
+  const initialValues = {
     title: '',
     description: '',
     language: 'en',
@@ -11,118 +16,64 @@ export default function QuizForm() {
     duration: 60,
     isPublic: true,
     category: '',
-    tags: [],
-  });
-
-  const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState({
-    text: '',
-    type: 'single-choice',
-    options: ['', '', '', ''],
-    correctAnswers: [],
-    points: 1,
-    hint: '',
-  });
-
-  const handleQuizChange = (e) => {
-    const { name, value } = e.target;
-    setQuizData((prev) => ({ ...prev, [name]: value }));
+    tags: '',
+    questions: [], // ← WAŻNE!
   };
 
-  const handleQuestionChange = (e, idx = null) => {
-    const { name, value } = e.target;
-    if (name.startsWith('option')) {
-      const newOptions = [...currentQuestion.options];
-      newOptions[idx] = value;
-      setCurrentQuestion((prev) => ({ ...prev, options: newOptions }));
-    } else {
-      setCurrentQuestion((prev) => ({ ...prev, [name]: value }));
-    }
-  };
+  const handleSubmit = async (values) => {
+    const quizData = {
+      ...values,
+      tags: values.tags.split(',').map(tag => tag.trim()),
+    };
 
-  const addQuestion = () => {
-    setQuestions((prev) => [...prev, currentQuestion]);
-    setCurrentQuestion({
-      text: '',
-      type: 'single-choice',
-      options: ['', '', '', ''],
-      correctAnswers: [],
-      points: 1,
-      hint: '',
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     try {
-      const quizRes = await api.post('/api/quizzes', quizData);
-      const quizId = quizRes.data._id;
-
-      for (const q of questions) {
-        await api.post(`/api/quizzes/${quizId}/questions`, q);
-      }
-
+      await api.post('/api/quizzes', quizData, {
+        headers: { Authorization: `Bearer ${keycloak.token}` },
+      });
       alert('Quiz utworzony!');
     } catch (err) {
-      console.error(err);
-      alert('Błąd przy tworzeniu quizu');
+      console.error('Błąd przy tworzeniu quizu', err);
+      alert('Błąd');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Nowy Quiz</h2>
+    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      {({ values, setFieldValue }) => (
+        <Form>
+          <h2>Quiz</h2>
 
-      <input name="title" placeholder="Tytuł" value={quizData.title} onChange={handleQuizChange} required />
-      <textarea name="description" placeholder="Opis" value={quizData.description} onChange={handleQuizChange} />
-      <input name="category" placeholder="Kategoria" value={quizData.category} onChange={handleQuizChange} />
-      <input name="tags" placeholder="Tagi (przecinki)" value={quizData.tags.join(',')} onChange={(e) => setQuizData((prev) => ({ ...prev, tags: e.target.value.split(',') }))} />
+          <label>Tytuł:</label>
+          <Field name="title" placeholder="Tytuł" required />
 
-      <select name="difficulty" value={quizData.difficulty} onChange={handleQuizChange}>
-        <option value="easy">Łatwy</option>
-        <option value="medium">Średni</option>
-        <option value="hard">Trudny</option>
-      </select>
+          <label>Opis:</label>
+          <Field name="description" placeholder="Opis" />
 
-      <input name="duration" type="number" placeholder="Czas trwania (sekundy)" value={quizData.duration} onChange={handleQuizChange} />
+          <label>Kategoria:</label>
+          <Field name="category" placeholder="Kategoria" />
 
-      <h3>Dodaj pytanie</h3>
-      <input name="text" placeholder="Treść pytania" value={currentQuestion.text} onChange={handleQuestionChange} />
+          <label>Tagi (przecinki):</label>
+          <Field name="tags" placeholder="tag1,tag2" />
 
-      {currentQuestion.options.map((opt, idx) => (
-        <input
-          key={idx}
-          name={`option${idx}`}
-          placeholder={`Opcja ${idx + 1}`}
-          value={opt}
-          onChange={(e) => handleQuestionChange(e, idx)}
-        />
-      ))}
+          <label>Poziom trudności:</label>
+          <Field as="select" name="difficulty">
+            <option value="easy">Łatwy</option>
+            <option value="medium">Średni</option>
+            <option value="hard">Trudny</option>
+          </Field>
 
-      <input
-        name="correctAnswers"
-        placeholder="Poprawne odpowiedzi (indeksy lub teksty, przecinki)"
-        value={currentQuestion.correctAnswers.join(',')}
-        onChange={(e) => setCurrentQuestion((prev) => ({
-          ...prev,
-          correctAnswers: e.target.value.split(','),
-        }))}
-      />
+          <label>Czas trwania (sekundy):</label>
+          <Field name="duration" type="number" />
 
-      <input
-        name="points"
-        type="number"
-        placeholder="Punkty"
-        value={currentQuestion.points}
-        onChange={handleQuestionChange}
-      />
+          <label>Prywatny:</label>
+          <Field type="checkbox" name="isPublic" />
 
-      <input name="hint" placeholder="Podpowiedź" value={currentQuestion.hint} onChange={handleQuestionChange} />
+          <QuestionForm values={values} setFieldValue={setFieldValue} />
 
-      <button type="button" onClick={addQuestion}>➕ Dodaj pytanie</button>
-
-      <br />
-      <button type="submit">Utwórz Quiz</button>
-    </form>
+          <br />
+          <button type="submit">Zapisz quiz</button>
+        </Form>
+      )}
+    </Formik>
   );
 }

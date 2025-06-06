@@ -11,7 +11,13 @@ exports.getAllQuizzes = async (req, res) => {
 
 exports.createQuiz = async (req, res) => {
   try {
-    const quiz = new Quiz(req.body);
+    console.log('[createQuiz] req.body:', req.body);
+    const body = {
+      ...req.body,
+      createdBy: req.user.keycloakId,
+    }
+    console.log('[createQuiz] final body:', body);
+    const quiz = new Quiz(body);
     await quiz.save();
     res.status(201).json(quiz);
   } catch (err) {

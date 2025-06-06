@@ -28,7 +28,12 @@ app.use('/api/users',
     console.log('[GATEWAY] /api/users Authorization:', req.headers.authorization);
     next();
   },
-  verifyToken,
+  verifyToken, // weryfikuje token i ustawia req.user
+  // createProxyMiddleware({
+  //   target: process.env.USER_SERVICE_URL || 'http://localhost:3002',
+  //   changeOrigin: true,
+  //   pathRewrite: { '^/api/users': '/' },
+  // }),
   proxy(process.env.USER_SERVICE_URL || 'http://localhost:3002', {
     proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
       if (srcReq.user) {
@@ -41,14 +46,23 @@ app.use('/api/users',
 );
 
 // 👇 Można też dodać inne trasy, też chronione verifyToken
-app.use('/api/quiz',
+app.use('/api/quizzes',
+  (req, res, next) => {
+    console.log('[GATEWAY] /api/quizzes Authorization:', req.headers.authorization);
+    next();
+  },
   verifyToken,
-  createProxyMiddleware({
-    target: process.env.QUIZ_SERVICE_URL || 'http://localhost:3003',
-    changeOrigin: true,
-    pathRewrite: { '^/api/quiz': '/' },
+  proxy(process.env.QUIZ_SERVICE_URL || 'http://localhost:3003', {
+    proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
+      if (srcReq.user) {
+        proxyReqOpts.headers['x-user-keycloakid'] = srcReq.user.keycloakId;
+        proxyReqOpts.headers['x-user-email'] = srcReq.user.email;
+      }
+      return proxyReqOpts;
+    }
   })
 );
+
 
 // 🔓 publiczne endpointy (np. logowanie, rejestracja)
 app.use('/api/auth', require('./routes/authRoutes'));
