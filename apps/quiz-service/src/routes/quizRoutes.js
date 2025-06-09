@@ -14,6 +14,9 @@ router.get('/quizzes/search', quizController.searchQuizzes);
 
 router.put('/:id', extractUser, quizController.updateQuiz);
 router.delete('/:id', extractUser, quizController.deleteQuiz);
+router.get('/health', (req, res) => {
+    res.send('user-service OK');
+  });
 
 
 router.delete('/admin/:id', extractUser, isAdmin, quizController.deleteQuiz);

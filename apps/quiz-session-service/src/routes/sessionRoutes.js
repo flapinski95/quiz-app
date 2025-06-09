@@ -9,5 +9,8 @@ router.post('/:sessionId/pause', extractUser, sessionController.pauseSession);
 router.post('/:sessionId/finish', extractUser, sessionController.finishSession);
 router.get('/my', extractUser, sessionController.getUserSessions);
 router.post('/:sessionId/resume', extractUser, sessionController.resumeSession);
+router.get('/health', (req, res) => {
+    res.send('user-service OK');
+  });
 
 module.exports = router;

@@ -5,6 +5,8 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+ENV DATABASE_URL=postgresql://flapinski:cyckidupcia@postgres:5432/wordmaster
+
 RUN npx prisma generate
 
 FROM node:20-alpine AS dev

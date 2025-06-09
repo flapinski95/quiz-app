@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
+const mongoUri = process.env.MONGO_URI || fs.readFileSync('/run/secrets/quiz_mongo_uri', 'utf8').trim();
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(mongoUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
