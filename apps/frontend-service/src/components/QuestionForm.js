@@ -1,71 +1,112 @@
-// components/QuestionForm.js
-import { Field, FieldArray } from 'formik';
+'use client';
 
-export default function QuestionForm({ values, setFieldValue }) {
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+import api from '../lib/axios';
+import styles from '../app/page.module.css';
+
+const questionTypes = ['single-choice', 'multiple-choice', 'true-false', 'open-ended'];
+
+export default function QuestionForm({ quizId, token, onQuestionAdded }) {
+  const initialValues = {
+    text: '',
+    type: 'single-choice',
+    options: ['', '', '', ''],
+    correctAnswers: [],
+    points: 1,
+    hint: ''
+  };
+
+  const validationSchema = Yup.object({
+    text: Yup.string().required('Treść pytania jest wymagana'),
+    type: Yup.string().required(),
+    points: Yup.number().min(1).required(),
+  });
+
+  const handleSubmit = async (values, { resetForm }) => {
+    try {
+      const payload = {
+        ...values,
+        quizId,
+      };
+
+      await api.post(`/api/quizzes/${quizId}/questions`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert('Dodano pytanie!');
+      resetForm();
+      onQuestionAdded?.();
+    } catch (err) {
+      console.error('Błąd przy dodawaniu pytania', err);
+      alert('Nie udało się dodać pytania');
+    }
+  };
+
   return (
-    <FieldArray name="questions">
-      {({ push, remove }) => (
-        <div>
-          <h3>Dodaj pytania</h3>
-          {values.questions.map((q, idx) => (
-            <div key={idx} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
-              <label>Treść pytania:</label>
-              <Field name={`questions.${idx}.text`} placeholder="Wpisz pytanie" required />
+    <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+      {({ values }) => (
+        <Form className={styles.quizContainer}>
+          <h3 className={styles.title}>Dodaj pytanie</h3>
 
-              <label>Typ pytania:</label>
-              <Field as="select" name={`questions.${idx}.type`}>
-                <option value="single-choice">Jednokrotny wybór</option>
-                <option value="multiple-choice">Wielokrotny wybór</option>
-                <option value="true-false">Prawda/Fałsz</option>
-                <option value="open">Pytanie otwarte</option>
+          <label>Treść pytania:</label>
+          <Field name="text" placeholder="Pytanie" className={styles.input} />
+
+          <label>Typ pytania:</label>
+          <Field as="select" name="type" className={styles.input}>
+            {questionTypes.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </Field>
+
+          {(values.type === 'single-choice' || values.type === 'multiple-choice') && (
+            <>
+              <label>Opcje odpowiedzi:</label>
+              {values.options.map((_, i) => (
+                <Field
+                  key={i}
+                  name={`options[${i}]`}
+                  placeholder={`Opcja ${i + 1}`}
+                  className={styles.input}
+                />
+              ))}
+
+              <label>Poprawne odpowiedzi (oddzielone przecinkami):</label>
+              <Field
+                name="correctAnswers"
+                placeholder="np. Opcja 1, Opcja 2"
+                className={styles.input}
+              />
+            </>
+          )}
+
+          {values.type === 'true-false' && (
+            <>
+              <label>Poprawna odpowiedź:</label>
+              <Field as="select" name="correctAnswers" className={styles.input}>
+                <option value="">-- wybierz --</option>
+                <option value="Prawda">Prawda</option>
+                <option value="Fałsz">Fałsz</option>
               </Field>
+            </>
+          )}
 
-              <FieldArray name={`questions.${idx}.options`}>
-                {({ push: pushOpt, remove: removeOpt }) => (
-                  <div>
-                    <label>Opcje:</label>
-                    {q.options.map((opt, i) => (
-                      <div key={i}>
-                        <Field name={`questions.${idx}.options.${i}`} placeholder={`Opcja ${i + 1}`} />
-                        {q.type === 'multiple-choice' && (
-                          <label style={{ marginLeft: '8px' }}>
-                            <input
-                              type="checkbox"
-                              checked={q.correctAnswers.includes(opt)}
-                              onChange={() => {
-                                const updated = q.correctAnswers.includes(opt)
-                                  ? q.correctAnswers.filter((v) => v !== opt)
-                                  : [...q.correctAnswers, opt];
-                                setFieldValue(`questions.${idx}.correctAnswers`, updated);
-                              }}
-                            /> Poprawna
-                          </label>
-                        )}
-                        <button type="button" onClick={() => removeOpt(i)}>Usuń opcję</button>
-                      </div>
-                    ))}
-                    <button type="button" onClick={() => pushOpt('')}>Dodaj opcję</button>
-                  </div>
-                )}
-              </FieldArray>
+          {values.type === 'open-ended' && (
+            <>
+              <label>Poprawna odpowiedź (tekstowa):</label>
+              <Field name="correctAnswers" placeholder="np. 42" className={styles.input} />
+            </>
+          )}
 
-              <label>Punkty:</label>
-              <Field name={`questions.${idx}.points`} type="number" />
+          <label>Punktacja:</label>
+          <Field type="number" name="points" className={styles.input} />
 
-              <label>Podpowiedź:</label>
-              <Field name={`questions.${idx}.hint`} />
+          <label>Podpowiedź (opcjonalnie):</label>
+          <Field name="hint" placeholder="Podpowiedź" className={styles.input} />
 
-              <button type="button" onClick={() => remove(idx)}>Usuń pytanie</button>
-            </div>
-          ))}
-
-          <button type="button" onClick={() => push({
-            text: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswers: [], points: 1, hint: ''
-          })}>
-            ➕ Dodaj pytanie
-          </button>
-        </div>
+          <button type="submit" className={styles.submitBtn}>Dodaj pytanie</button>
+        </Form>
       )}
-    </FieldArray>
+    </Formik>
   );
 }

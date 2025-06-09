@@ -8,10 +8,54 @@ datasource db {
 }
 
 model UserProfile {
+  id                  String             @id @default(uuid())
+  keycloakId          String             @unique
+  username            String?
+  email               String?
+  bio                 String?
+  totalQuizzesPlayed  Int                @default(0)
+  totalScore          Int                @default(0)
+  averageScore        Float              @default(0.0)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  quizHistory         UserQuizHistory[]     
+  topicStats          UserTopicStats[]     
+  activeQuizzes       ActiveQuizSession[] 
+}
+model UserQuizHistory {
+  id           String    @id @default(uuid())
+  userId       String
+  quizId       String    
+  score        Int
+  correctCount Int
+  totalCount   Int
+  completedAt  DateTime  @default(now())
+
+  user   UserProfile @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([quizId])
+}
+model UserTopicStats {
   id         String   @id @default(uuid())
-  keycloakId String   @unique
-  avatarUrl  String?
-  bio        String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  userId     String
+  category   String
+  avgScore   Float
+  quizCount  Int
+
+  user UserProfile @relation(fields: [userId], references: [id])
+
+  @@unique([userId, category])
+}
+model ActiveQuizSession {
+  id        String   @id @default(uuid())
+  userId    String
+  quizId    String
+  sessionId String   
+  startedAt DateTime @default(now())
+
+  user UserProfile @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }

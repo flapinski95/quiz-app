@@ -1,14 +1,69 @@
+/* Ogólne */
+.container {
+  /* padding: 2rem; */
+  font-family: sans-serif;
+}
+
+/* Header */
 .header {
-  background-color: #f8f9fa;
-  color: black;
-  padding: 20px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #242424;
+  color: white;
+  padding: 1rem 2rem;
   position: sticky;
   top: 0;
   z-index: 1000;
   height: 60px;
   width: 100%;
 }
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.nav button {
+  margin-left: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.nav button:hover {
+  background-color: #666;
+}
+
+/* Main + przywitanie */
+.main {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.title {
+  font-size: 2rem;
+}
+
+.logoutButton {
+  margin-top: 2rem;
+  padding: 0.5rem 2rem;
+  background-color: crimson;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  background-color: darkred;
+}
+
+/* Profil */
 .profileContainer {
   max-width: 600px;
   margin: auto;
@@ -40,3 +95,91 @@
   border: 1px solid #ccc;
 }
 
+/* Quiz */
+.quiz-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.answer-list {
+  list-style: none;
+  padding: 0;
+}
+
+.answer-list li {
+  margin-bottom: 0.5rem;
+}
+
+.submit-btn {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background-color: #303f9f;
+}
+
+/* Inne */
+.result-box {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.loading {
+  text-align: center;
+  margin-top: 2rem;
+  font-weight: bold;
+}
+.input {
+  width: 100%;
+  padding: 0.6rem;
+  margin: 0.5rem 0 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.adminGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.adminColumn {
+  flex: 1;
+  min-width: 300px;
+}
+
+.adminSection h2 {
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.commentList {
+  margin-top: 1rem;
+  padding-left: 1rem;
+}
+
+.commentList li {
+  margin-bottom: 0.5rem;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.activePage {
+  font-weight: bold;
+  border: 2px solid black;
+}

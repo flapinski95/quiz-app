@@ -15,8 +15,9 @@ const getMyProfile = async (req, res) => {
       user = await prisma.userProfile.create({
         data: {
           keycloakId: req.user.keycloakId,
+          username: req.user.username || req.user.email?.split('@')[0] || 'anonymous',
+          email: req.user.email || 'unknown@example.com',
           bio: '',
-          avatarUrl: '',
         },
       });
       console.log('[getMyProfile] Nowy profil utworzony.');
@@ -26,103 +27,130 @@ const getMyProfile = async (req, res) => {
     }
   } else {
     console.log('[getMyProfile] Profil znaleziony.');
+    try {
+      user = await prisma.userProfile.update({
+        where: { keycloakId: req.user.keycloakId },
+        data: {
+          username: req.user.username || user.username,
+          email: req.user.email || user.email,
+        },
+      });
+    } catch (err) {
+      console.error('[getMyProfile] Błąd aktualizacji profilu:', err.message);
+    }
   }
-
-  res.json(user);
-};
-
-const updateMyProfile = async (req, res) => {
-  console.log(req.body);
-  const { bio, avatarUrl } = req.body;
-  console.log('[updateMyProfile] Aktualizacja profilu:', { bio, avatarUrl });
-
-  try {
-    const updated = await prisma.userProfile.upsert({
-      where: { keycloakId: req.user.keycloakId },
-      update: { bio, avatarUrl },
-      create: {
-        keycloakId: req.user.keycloakId,
-        bio,
-        avatarUrl,
-      },
-    });
-    console.log('[updateMyProfile] Profil zaktualizowany.');
-    res.json(updated);
-  } catch (err) {
-    console.error('[updateMyProfile] Błąd:', err.message);
-    res.status(500).json({ message: 'Nie udało się zaktualizować profilu', error: err.message });
-  }
-};
-
-const updateMyAvatar = async (req, res) => {
-  const { avatarUrl } = req.body;
-  console.log('[updateMyAvatar] Aktualizacja awatara na:', avatarUrl);
-
-  if (!avatarUrl) {
-    console.warn('[updateMyAvatar] Brak avatarUrl w żądaniu.');
-    return res.status(400).json({ message: 'Brak adresu URL awatara' });
-  }
-
-  try {
-    const updated = await prisma.userProfile.update({
-      where: { keycloakId: req.user.keycloakId },
-      data: { avatarUrl },
-    });
-    console.log('[updateMyAvatar] Awatar zaktualizowany.');
-    res.json(updated);
-  } catch (err) {
-    console.error('[updateMyAvatar] Błąd:', err.message);
-    res.status(500).json({ message: 'Nie udało się zaktualizować awatara', error: err.message });
-  }
-};
-
-const getCloudinarySignature = (req, res) => {
-  const timestamp = Math.round(new Date().getTime() / 1000);
-  const cloudinarySecret = process.env.CLOUDINARY_API_SECRET;
-  const payload = `timestamp=${timestamp}${cloudinarySecret}`;
-  const signature = crypto.createHash('sha1').update(payload).digest('hex');
-
-  console.log('[getCloudinarySignature] Wysłano sygnaturę dla Cloudinary');
 
   res.json({
-    timestamp,
-    signature,
-    apiKey: process.env.CLOUDINARY_API_KEY,
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME
+    ...user,
+    stats: {
+      totalQuizzesPlayed: user.totalQuizzesPlayed,
+      totalScore: user.totalScore,
+      averageScore: user.averageScore,
+    }
   });
 };
-// controllers/syncUserController.js
-
-
-const syncUser = async (req, res) => {
-  const { keycloakId} = req.body;
-
-  if (!keycloakId) {
-    return res.status(400).json({ message: 'Brakuje danych użytkownika' });
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await prisma.userProfile.findMany({
+      select: {
+        keycloakId: true,
+        username: true,
+        email: true,
+        bio: true,
+        totalQuizzesPlayed: true,
+        totalScore: true,
+        averageScore: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    res.json(users);  
   }
+  catch (err) {
+    console.error('[getAllUsers] Błąd:', err.message);
+    res.status(500).json({ message: 'Nie udało się pobrać użytkowników', error: err.message });
+}
+}
+const updateStats = async (req, res) => {
+  const { keycloakId } = req.params;
+  const { newScore } = req.body;
 
   try {
-    const user = await prisma.userProfile.upsert({
+    const user = await prisma.userProfile.findUnique({ where: { keycloakId } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie istnieje' });
+    }
+
+    const totalQuizzesPlayed = user.totalQuizzesPlayed + 1;
+    const totalScore = user.totalScore + newScore;
+    const averageScore = totalScore / totalQuizzesPlayed;
+
+    const updated = await prisma.userProfile.update({
       where: { keycloakId },
-      update: {},
-      create: {
-        keycloakId,
-        bio: '',
-        avatarUrl: '',
+      data: { totalQuizzesPlayed, totalScore, averageScore },
+    });
+
+    res.json(updated);
+  } catch (err) {
+    console.error('[updateStats] Błąd:', err.message);
+    res.status(500).json({ message: 'Nie udało się zaktualizować statystyk', error: err.message });
+  }
+};
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user?.keycloakId;
+    const bio = req.body?.bio;
+
+    console.log('[updateProfile] Start');
+    console.log('[updateProfile] Header x-user-keycloakid:', req.headers['x-user-keycloakid']);
+    console.log('[updateProfile] Wyciągnięty userId:', userId);
+    console.log('[updateProfile] Bio:', bio);
+
+    if (!userId) {
+      console.warn('[updateProfile] Brak userId w req.user');
+      return res.status(400).json({ error: 'Brak userId' });
+    }
+
+    if (!bio || typeof bio !== 'string') {
+      console.warn('[updateProfile] Nieprawidłowe bio');
+      return res.status(400).json({ error: 'Nieprawidłowe bio' });
+    }
+
+    const exists = await prisma.userProfile.findUnique({
+      where: { keycloakId: userId },
+    });
+
+    if (!exists) {
+      console.warn('[updateProfile] Profil nie istnieje dla:', userId);
+      return res.status(404).json({ error: 'Profil nie istnieje' });
+    }
+
+    const profile = await prisma.userProfile.update({
+      where: { keycloakId: userId },
+      data: {
+        bio: bio,
+        updatedAt: new Date(),
       },
     });
 
-    res.status(201).json(user);
+    console.log('[updateProfile] Sukces. Zaktualizowany profil:', profile);
+
+    res.json(profile);
   } catch (err) {
-    console.error('Błąd przy syncUser:', err);
-    res.status(500).json({ message: 'Nie udało się zapisać użytkownika w bazie' });
+    console.error('[updateProfile] Błąd krytyczny:', err);
+    res.status(500).json({ error: 'Błąd aktualizacji profilu', details: err.message });
   }
 };
 
+
+
 module.exports = {
-  getMyProfile,
-  updateMyProfile,
-  updateMyAvatar,
-  getCloudinarySignature,
-  syncUser
+  getAllUsers,
+  updateProfile,
+  updateStats,
+  getMyProfile
 };

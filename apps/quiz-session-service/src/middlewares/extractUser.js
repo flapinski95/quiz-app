@@ -7,6 +7,6 @@ module.exports = (req, res, next) => {
       return res.status(401).json({ message: 'Brak identyfikatora użytkownika' });
     }
   
-    req.user = { keycloakId, email, roles };
+    req.user = { keycloakId, email, roles};
     next();
   };

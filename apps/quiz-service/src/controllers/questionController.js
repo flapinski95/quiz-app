@@ -41,3 +41,12 @@ exports.deleteQuestion = async (req, res) => {
     res.status(400).json({ error: 'Invalid question ID' });
   }
 };
+exports.getQuestionById = async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.status(404).json({ message: 'Pytanie nie znalezione' });
+    res.json(question);
+  } catch (err) {
+    res.status(500).json({ message: 'Błąd przy pobieraniu pytania', error: err.message });
+  }
+};

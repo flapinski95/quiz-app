@@ -22,6 +22,8 @@ const quizSchema = new mongoose.Schema({
     text: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
   }],
+  views: { type: Number, default: 0 },
+  timeLimit: { type: Number }, 
   createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
 });
