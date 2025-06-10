@@ -1,10 +1,14 @@
 "use client";
-import Keycloak from 'keycloak-js';
+import Keycloak from "keycloak-js";
 
-const keycloak = new Keycloak({
-  url: 'http://localhost/auth/',
-  realm: 'quiz-app',
-  clientId: 'frontend',
-});
+let keycloak = null;
+
+if (typeof window !== "undefined") {
+  keycloak = new Keycloak({
+    url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || "http://localhost:8080",
+    realm: "quiz-app",
+    clientId: "frontend",
+  });
+}
 
 export default keycloak;

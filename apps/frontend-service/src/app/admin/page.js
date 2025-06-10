@@ -8,8 +8,8 @@ import Header from '@/components/Header';
 
 export default function AdminPage() {
   const { keycloak, authenticated, loading } = useKeycloakContext();
-  const roles = keycloak.tokenParsed?.realm_access?.roles || [];
 
+  const [isAdmin, setIsAdmin] = useState(false);
   const [quizzes, setQuizzes] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
@@ -19,16 +19,22 @@ export default function AdminPage() {
   const QUIZ_LIMIT = 6;
 
   useEffect(() => {
-    if (authenticated && roles.includes('admin')) {
-      fetchAllUsers();
-    }
-  }, [authenticated]);
+    if (typeof window === 'undefined') return;
+    const roles = keycloak?.tokenParsed?.realm_access?.roles || [];
+    setIsAdmin(roles.includes('admin'));
+  }, [keycloak]);
 
   useEffect(() => {
-    if (authenticated && roles.includes('admin')) {
+    if (authenticated && isAdmin) {
+      fetchAllUsers();
+    }
+  }, [authenticated, isAdmin]);
+
+  useEffect(() => {
+    if (authenticated && isAdmin) {
       fetchAllQuizzes(quizPage);
     }
-  }, [authenticated, quizPage]);
+  }, [authenticated, isAdmin, quizPage]);
 
   const fetchAllQuizzes = async (page = 1) => {
     try {
@@ -91,7 +97,7 @@ export default function AdminPage() {
   };
 
   if (loading || !authenticated) return <p className={styles.loading}>Ładowanie...</p>;
-  if (!roles.includes('admin')) return <p className={styles.loading}>Brak dostępu</p>;
+  if (!isAdmin) return <p className={styles.loading}>Brak dostępu</p>;
 
   return (
     <div className={styles.container}>

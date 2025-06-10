@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.36.0 (HEAD)
+  labels:
+    io.kompose.service: gateway-service
+  name: gateway-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: gateway-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.36.0 (HEAD)
+      labels:
+        io.kompose.service: gateway-service
+    spec:
+      containers:
+        - env:
+            - name: ADMIN_CLIENT_ID
+              value: admin-cli
+            - name: ADMIN_CLIENT_SECRET_FILE
+              value: /run/secrets/gateway-admin-client-secret
+            - name: DEBUG
+              value: keycloak-connect:* npm start
+            - name: KEYCLOAK_FRONTEND_URL
+              value: http://keycloak:8080
+            - name: NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+              value: frontend
+            - name: NEXT_PUBLIC_KEYCLOAK_REALM
+              value: quiz-app
+            - name: NEXT_PUBLIC_KEYCLOAK_URL
+              value: http://keycloak:8080
+            - name: PORT
+              value: "3001"
+            - name: QUIZ_SERVICE_URL
+              value: http://quiz-service:3003
+            - name: SESSION_SERVICE_URL
+              value: http://quiz-session-service:3004
+            - name: USER_SERVICE_URL
+              value: http://user-service:3002
+          image: flapinski95/gateway-service:latest
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - http://localhost:3001/health
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 10
+          name: gateway-service
+          ports:
+            - containerPort: 3001
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/secrets/gateway-keycloak-client-secret
+              name: gateway-keycloak-client-secret
+              subPath: gateway-keycloak-client-secret
+
+            - mountPath: /app/secrets/gateway-session-secret
+              name: gateway-session-secret
+              subPath: gateway-session-secret
+
+            - mountPath: /app/secrets/gateway-admin-username
+              name: gateway-admin-username
+              subPath: gateway-admin-username
+
+            - mountPath: /app/secrets/gateway-admin-password
+              name: gateway-admin-password
+              subPath: gateway-admin-password
+
+            - mountPath: /app/secrets/gateway-user-service-secret
+              name: gateway-user-service-secret
+              subPath: gateway-user-service-secret
+
+            - mountPath: /app/secrets/gateway-admin-client-secret
+              name: gateway-admin-client-secret
+              subPath: gateway-admin-client-secret
+      restartPolicy: Always
+      volumes:
+        - name: gateway-keycloak-client-secret
+          secret:
+            items:
+              - key: gateway-keycloak-client-secret
+                path: gateway-keycloak-client-secret
+            secretName: gateway-keycloak-client-secret
+        - name: gateway-session-secret
+          secret:
+            items:
+              - key: gateway-session-secret
+                path: gateway-session-secret
+            secretName: gateway-session-secret
+        - name: gateway-admin-username
+          secret:
+            items:
+              - key: gateway-admin-username
+                path: gateway-admin-username
+            secretName: gateway-admin-username
+        - name: gateway-admin-password
+          secret:
+            items:
+              - key: gateway-admin-password
+                path: gateway-admin-password
+            secretName: gateway-admin-password
+        - name: gateway-user-service-secret
+          secret:
+            items:
+              - key: gateway-user-service-secret
+                path: gateway-user-service-secret
+            secretName: gateway-user-service-secret
+        - name: gateway-admin-client-secret
+          secret:
+            items:
+              - key: gateway-admin-client-secret
+                path: gateway-admin-client-secret
+            secretName: gateway-admin-client-secret

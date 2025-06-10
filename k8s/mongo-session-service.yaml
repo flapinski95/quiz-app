@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.36.0 (HEAD)
+  labels:
+    io.kompose.service: mongo-session
+  name: mongo-session
+spec:
+  ports:
+    - name: "mongo"
+      port: 27017
+      targetPort: 27017
+  selector:
+    io.kompose.service: mongo-session

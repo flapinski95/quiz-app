@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.36.0 (HEAD)
+  labels:
+    io.kompose.service: frontend-service
+  name: frontend-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: frontend-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.36.0 (HEAD)
+      labels:
+        io.kompose.service: frontend-service
+    spec:
+      containers:
+        - env:
+            - name: KEYCLOAK_CLIENT_ID
+              value: frontend
+            - name: KEYCLOAK_ISSUER
+              value: http://keycloak:8080/realms/quiz-app
+            - name: NEXTAUTH_URL
+              value: http://frontend-service:3000
+            - name: NEXT_PUBLIC_GATEWAY_URL
+              value: http://gateway-service:3001
+            - name: NEXT_PUBLIC_USER_API_URL
+              value: http://user-service:3002
+            - name: PORT
+              value: "3000"
+            - name: NEXT_PUBLIC_KEYCLOAK_URL
+              value: http://keycloak.localhost
+          image: flapinski95/frontend-service:latest
+          name: frontend-service
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/secrets/nextauth
+              name: frontend-nextauth-secret
+              subPath: frontend-nextauth-secret
+      restartPolicy: Always
+      volumes:
+        - name: frontend-nextauth-secret
+          secret:
+            items:
+              - key: frontend-nextauth-secret
+                path: frontend-nextauth-secret
+            secretName: frontend-nextauth-secret

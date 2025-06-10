@@ -1,8 +1,8 @@
 const axios = require('axios');
 const Session = require('../models/Session');
+const fs = require('fs');
 
-const QUIZ_SERVICE_URL = process.env.QUIZ_SERVICE_URL || fs.readFileSync('/run/secrets/quiz_session_quiz_service_url', 'utf8').trim();
-
+const QUIZ_SERVICE_URL = process.env.QUIZ_SESSION_QUIZ_SERVICE_URL
 exports.startSession = async (req, res) => {
   try {
     const { quizId } = req.params;

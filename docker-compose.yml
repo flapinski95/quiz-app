@@ -1,7 +1,6 @@
 services:
   gateway-service:
-    build:
-      context: ./apps/gateway-service1
+    image: flapinski95/gateway-service:latest
     depends_on:
       - keycloak
     container_name: gateway-service
@@ -18,6 +17,7 @@ services:
       - SESSION_SERVICE_URL=http://quiz-session-service:3004
       - DEBUG=keycloak-connect:* npm start
       - ADMIN_CLIENT_ID=admin-cli
+      - ADMIN_CLIENT_SECRET_FILE=/run/secrets/gateway_admin_client_secret
     secrets:
       - gateway_keycloak_client_secret
       - gateway_session_secret
@@ -35,33 +35,25 @@ services:
       retries: 3
 
   frontend-service:
-    build:
-      context: ./apps/frontend-service
-      target: dev
+    image: flapinski95/frontend-service:latest
     container_name: frontend-service
     environment:
       - PORT=3000
       - NEXTAUTH_URL=http://localhost:3000
       - KEYCLOAK_CLIENT_ID=frontend
       - KEYCLOAK_ISSUER=http://localhost:8080/realms/quiz-app
-      - NEXT_PUBLIC_GATEWAY_URL=http://localhost:3001
+      - NEXT_PUBLIC_GATEWAY_URL=http://gateway-service:3001
       - NEXT_PUBLIC_USER_API_URL=http://user-service:3002
     secrets:
       - frontend_nextauth_secret
     ports:
       - "3000:3000"
-
-    volumes:
-      - ./apps/frontend-service:/app
-      - /app/node_modules
-    command: npm run dev
     networks:
       - app-net
       - wordmaster-net
 
   user-service:
-    build:
-      context: ./apps/user-service
+    image: flapinski95/user-service:latest
     container_name: user-service
     ports:
       - "3002:3002"
@@ -132,13 +124,13 @@ services:
     volumes:
       - keycloak-data:/opt/keycloak/data
 
-  redis:
-    image: redis:7
-    container_name: wordmaster-redis
-    ports:
-      - "6379:6379"
-    networks:
-      - wordmaster-net
+  # redis:
+  #   image: redis:7
+  #   container_name: wordmaster-redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - wordmaster-net
 
   mongo:
     image: mongo:6
@@ -179,8 +171,7 @@ services:
       - app-net
 
   quiz-service:
-    build:
-      context: ./apps/quiz-service
+    image: flapinski95/quiz-service:latest
     container_name: quiz-service
     ports:
       - "3003:3003"
@@ -200,9 +191,7 @@ services:
       retries: 3
 
   quiz-session-service:
-    build:
-      context: ./apps/quiz-session-service
-      target: dev
+    image: flapinski95/quiz-session-service:latest
     container_name: quiz-session-service
     ports:
       - "3004:3004"
@@ -213,10 +202,6 @@ services:
       - quiz_session_quiz_service_url
     depends_on:
       - mongo-session
-    volumes:
-      - ./apps/quiz-session-service:/app
-      - /app/node_modules
-    command: npx nodemon src/index.js
     networks:
       - wordmaster-net
       - app-net

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.36.0 (HEAD)
+  labels:
+    io.kompose.service: quiz-session-service
+  name: quiz-session-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: quiz-session-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.36.0 (HEAD)
+      labels:
+        io.kompose.service: quiz-session-service
+    spec:
+      containers:
+        - env:
+            - name: PORT
+              value: "3004"
+            - name: QUIZ_SESSION_MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-session-mongo-uri
+                  key: quiz-session-mongo-uri
+            - name: QUIZ_SESSION_QUIZ_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-session-quiz-service-url
+                  key: quiz-session-quiz-service-url
+          image: flapinski95/quiz-session-service:latest
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - http://localhost:3004/health
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 10
+          name: quiz-session-service
+          ports:
+            - containerPort: 3004
+              protocol: TCP
+      restartPolicy: Always

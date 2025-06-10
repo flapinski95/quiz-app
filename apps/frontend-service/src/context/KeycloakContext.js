@@ -14,7 +14,7 @@ export const KeycloakProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !keycloak) return;
 
     const silentCheckUri = `${window.location.origin}/silent-check-sso.html`;
 
