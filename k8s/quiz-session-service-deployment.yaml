@@ -34,7 +34,7 @@ spec:
                 secretKeyRef:
                   name: quiz-session-quiz-service-url
                   key: quiz-session-quiz-service-url
-          image: flapinski95/quiz-session-service:k8s
+          image: flapinski95/quiz-session-service:k8s_test
           livenessProbe:
             exec:
               command:

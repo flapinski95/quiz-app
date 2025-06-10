@@ -26,7 +26,7 @@ spec:
               value: postgresql://flapinski:cyckidupcia@postgres:5432/wordmaster
             - name: PORT
               value: "3002"
-          image: flapinski95/user-service:latest
+          image: flapinski95/user-service:k8s_test
           livenessProbe:
             exec:
               command:

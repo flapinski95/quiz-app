@@ -29,7 +29,7 @@ spec:
                 secretKeyRef:
                   name: quiz-mongo-uri
                   key: quiz-mongo-uri
-          image: flapinski95/quiz-service:k8s
+          image: flapinski95/quiz-service:k8s_test
           livenessProbe:
             exec:
               command:

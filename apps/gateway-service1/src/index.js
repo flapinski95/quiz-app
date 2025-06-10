@@ -109,7 +109,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 async function getAdminToken() {
   const clientSecret = process.env.ADMIN_CLIENT_SECRET || fs.readFileSync(process.env.ADMIN_CLIENT_SECRET_FILE, 'utf8').trim();
 
-  const res = await axios.post('http://keycloak:8080/realms/quiz-app/protocol/openid-connect/token', new URLSearchParams({
+  const res = await axios.post('http://quiz.localhost/auth/realms/quiz-app/protocol/openid-connect/token', new URLSearchParams({
     grant_type: 'client_credentials',
     client_id: process.env.ADMIN_CLIENT_ID,
     client_secret: clientSecret
@@ -122,7 +122,7 @@ async function getAdminToken() {
 
 async function deleteFromKeycloak(keycloakUserId) {
   const token = await getAdminToken();
-  await axios.delete(`http://keycloak:8080/admin/realms/quiz-app/users/${keycloakUserId}`, {
+  await axios.delete(`http://quiz.localhost/auth/realms/quiz-app/users/${keycloakUserId}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 }
