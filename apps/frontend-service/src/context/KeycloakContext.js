@@ -35,6 +35,7 @@ export const KeycloakProvider = ({ children }) => {
         setAuthenticated(false);
         setLoading(false);
       });
+      console.log("🔍 Keycloak config URL:", keycloak?.config?.url);
 
     const refreshInterval = setInterval(() => {
       if (keycloak.authenticated) {

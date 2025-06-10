@@ -18,11 +18,11 @@ export default function LoginPage() {
   return (
     <div>
       <h1>Zaloguj się</h1>
-      <button onClick={() => keycloak.login({ redirectUri: "http://localhost:3000/home" })}>
+      <button onClick={() => keycloak.login({ redirectUri: "http://quiz.localhost/home" })}>
         Zaloguj się
       </button>
       <button onClick={() => keycloak.register()}>Nie masz konta? Zarejestruj się</button>
-      <button onClick={() => keycloak.login({ idpHint: "google", redirectUri: "http://localhost:3000/home" })}>
+      <button onClick={() => keycloak.login({ idpHint: "google", redirectUri: "http://quiz.localhost/home" })}>
         Zaloguj przez Google
       </button>
     </div>

@@ -25,7 +25,7 @@ spec:
             - name: KEYCLOAK_CLIENT_ID
               value: frontend
             - name: KEYCLOAK_ISSUER
-              value: http://keycloak:8080/realms/quiz-app
+              value: http://auth.localhost
             - name: NEXTAUTH_URL
               value: http://frontend-service:3000
             - name: NEXT_PUBLIC_GATEWAY_URL
@@ -35,7 +35,7 @@ spec:
             - name: PORT
               value: "3000"
             - name: NEXT_PUBLIC_KEYCLOAK_URL
-              value: http://quiz.localhost
+              value: http://auth.localhost
           image: flapinski95/frontend-service:k8s_test
           name: frontend-service
           ports:

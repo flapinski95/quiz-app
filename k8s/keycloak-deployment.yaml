@@ -21,13 +21,16 @@ spec:
           image: quay.io/keycloak/keycloak:24.0.1
           args:
             - start-dev
-            - --hostname-url=http://quiz.localhost
-            - --hostname-admin-url=http://quiz.localhost
+            - --hostname-url=http://auth.localhost
+            - --hostname-admin-url=http://auth.localhost
             - --hostname-strict=false
             - --db=postgres
             - --db-url=jdbc:postgresql://keycloak-db:5432/keycloakdb
             - --db-username=keycloak
             - --db-password=securepassword
+            - --spi-cors-allowed-origins=+
+            - --spi-cors-allowed-methods=GET,POST
+            - --spi-hostname-strict-https=false
           env:
             - name: KEYCLOAK_ADMIN
               value: admin

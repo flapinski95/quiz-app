@@ -61,7 +61,7 @@ export default function HomePage() {
         <button
           className={styles.logoutButton}
           onClick={() => {
-            keycloak.logout({ redirectUri: "http://localhost:3000" });
+            keycloak.logout({ redirectUri: "http://quiz.localhost/" });
           }}
         >
           Wyloguj

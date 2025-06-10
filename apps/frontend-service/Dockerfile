@@ -1,25 +1,35 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS deps
 WORKDIR /app
-
 COPY package*.json ./
 RUN npm install
 
-COPY . .
-RUN npm run build
+# --- Builder: build ze 100% czystym środowiskiem i sprawdzonymi zmiennymi
+FROM node:20-alpine AS builder
+WORKDIR /app
 
+ENV NEXT_PUBLIC_KEYCLOAK_URL=http://auth.localhost
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# 💣 Zawsze czyść .next, by nie mieć śmieci z poprzedniego buildu
+RUN rm -rf .next && npm run build
+
+# ✅ Sanity check - jeśli coś zawiera localhost:8080 to budujemy niepoprawnie
+RUN ! grep -r "localhost:8080" .next || (echo "❌ localhost:8080 found in build output!" && exit 1)
+
+# --- Dev stage (jeśli chcesz development pod Dockerem)
 FROM node:20-alpine AS dev
 WORKDIR /app
-
 ENV NODE_ENV=development
-EXPOSE 3000
-
+ENV NEXT_PUBLIC_KEYCLOAK_URL=http://auth.localhost
 COPY --from=builder /app /app
-
+EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
+# --- Final production image
 FROM node:20-alpine AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
 ENV PORT=3000
 
