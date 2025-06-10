@@ -79,7 +79,7 @@ services:
       - "15432:5432"
     environment:
       POSTGRES_USER: flapinski
-      POSTGRES_PASSWORD: cyckidupcia
+      POSTGRES_PASSWORD: haslo_haslo
       POSTGRES_DB: wordmaster
     volumes:
       - postgres-data:/var/lib/postgresql/data

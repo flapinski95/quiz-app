@@ -8,6 +8,7 @@ const verifyToken = require('./middlewares/verifyToken');
 const proxy = require('express-http-proxy');
 const isAdmin = require('./middlewares/isAdmin');
 const axios = require('axios');
+const fs = require('fs');
 
 dotenv.config();
 
@@ -103,11 +104,15 @@ app.use('/api/sessions',
 
 app.use('/api/auth', require('./routes/authRoutes'));
 
+
+
 async function getAdminToken() {
+  const clientSecret = process.env.ADMIN_CLIENT_SECRET || fs.readFileSync(process.env.ADMIN_CLIENT_SECRET_FILE, 'utf8').trim();
+
   const res = await axios.post('http://keycloak:8080/realms/quiz-app/protocol/openid-connect/token', new URLSearchParams({
     grant_type: 'client_credentials',
     client_id: process.env.ADMIN_CLIENT_ID,
-    client_secret: process.env.ADMIN_CLIENT_SECRET
+    client_secret: clientSecret
   }), {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
   });
