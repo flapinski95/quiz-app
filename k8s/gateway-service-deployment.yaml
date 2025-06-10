@@ -29,13 +29,13 @@ spec:
             - name: DEBUG
               value: keycloak-connect:* npm start
             - name: KEYCLOAK_FRONTEND_URL
-              value: http://quiz.localhost/auth
+              value: http://quiz.localhost
             - name: NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
               value: frontend
             - name: NEXT_PUBLIC_KEYCLOAK_REALM
               value: quiz-app
             - name: NEXT_PUBLIC_KEYCLOAK_URL
-              value: http://quiz.localhost/auth
+              value: http://quiz.localhost
             - name: PORT
               value: "3001"
             - name: QUIZ_SERVICE_URL
