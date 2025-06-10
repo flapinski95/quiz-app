@@ -33,8 +33,8 @@ keycloak-import:
 PLATFORMS=linux/amd64,linux/arm64
 
 buildx-push:
-	docker buildx build --platform $(PLATFORMS) -t flapinski95/gateway-service:latest ./apps/gateway-service1 --push
-	docker buildx build --platform $(PLATFORMS) -t flapinski95/frontend-service:latest ./apps/frontend-service --push
-	docker buildx build --platform $(PLATFORMS) -t flapinski95/quiz-service:latest ./apps/quiz-service --push
-	docker buildx build --platform $(PLATFORMS) -t flapinski95/quiz-session-service:latest ./apps/quiz-session-service --push
-	docker buildx build --platform $(PLATFORMS) -t flapinski95/user-service:latest ./apps/user-service --push
+	docker buildx build --platform $(PLATFORMS) -t flapinski95/gateway-service:k8s ./apps/gateway-service1 --push
+	docker buildx build --platform $(PLATFORMS) -t flapinski95/frontend-service:k8s ./apps/frontend-service --push
+	docker buildx build --platform $(PLATFORMS) -t flapinski95/quiz-service:k8s ./apps/quiz-service --push
+	docker buildx build --platform $(PLATFORMS) -t flapinski95/quiz-session-service:k8s ./apps/quiz-session-service --push
+	docker buildx build --platform $(PLATFORMS) -t flapinski95/user-service:k8s ./apps/user-service --push

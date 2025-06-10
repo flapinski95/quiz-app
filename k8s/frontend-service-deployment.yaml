@@ -36,7 +36,7 @@ spec:
               value: "3000"
             - name: NEXT_PUBLIC_KEYCLOAK_URL
               value: http://keycloak.localhost
-          image: flapinski95/frontend-service:latest
+          image: flapinski95/frontend-service:k8s
           name: frontend-service
           ports:
             - containerPort: 3000

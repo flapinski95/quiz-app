@@ -177,6 +177,7 @@ services:
       - "3003:3003"
     environment:
       - PORT=3003
+      - QUIZ_MONGO_URI=- MONGO_URI=/run/secrets/quiz_mongo_uri
     secrets:
       - quiz_mongo_uri
     depends_on:
