@@ -1,10 +1,7 @@
 const express = require('express');
-// const Keycloak = require('keycloak-connect');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const verifyToken = require('./middlewares/verifyToken');
-// const keycloakConfig = require('../keycloak.config');
 const proxy = require('express-http-proxy');
 const isAdmin = require('./middlewares/isAdmin');
 const axios = require('axios');
@@ -13,8 +10,10 @@ const fs = require('fs');
 dotenv.config();
 
 const app = express();
+
+
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'http://quiz.localhost',
   credentials: true,
   allowedHeaders: ['Authorization', 'Content-Type'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
@@ -102,13 +101,15 @@ app.use('/api/sessions',
 );
 
 
-app.use('/api/auth', require('./routes/authRoutes'));
 
 
+app.get('/healthz', (req, res) => {
+  res.json({ status: 'Inline health check passed' });
+});
 
 async function getAdminToken() {
-  const clientSecret = process.env.ADMIN_CLIENT_SECRET || fs.readFileSync(process.env.ADMIN_CLIENT_SECRET_FILE, 'utf8').trim();
-
+  const clientSecret = process.env.ADMIN_CLIENT_SECRET
+  if (!clientSecret) throw new Error('Brak ADMIN_CLIENT_SECRET');
   const res = await axios.post('http://quiz.localhost/realms/quiz-app/protocol/openid-connect/token', new URLSearchParams({
     grant_type: 'client_credentials',
     client_id: process.env.ADMIN_CLIENT_ID,
@@ -127,4 +128,4 @@ async function deleteFromKeycloak(keycloakUserId) {
   });
 }
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Gateway running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Gateway running on port ${PORT}`));

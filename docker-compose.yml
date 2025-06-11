@@ -43,7 +43,7 @@ services:
       - NEXT_PUBLIC_KEYCLOAK_URL=http://auth.localhost
       - KEYCLOAK_CLIENT_ID=frontend
       - KEYCLOAK_ISSUER=http://auth.localhost/realms/quiz-app
-      - NEXT_PUBLIC_GATEWAY_URL=http://gateway-service:3001
+      - NEXT_PUBLIC_GATEWAY_URL=http://gateway.localhost
       - NEXT_PUBLIC_USER_API_URL=http://user-service:3002
     secrets:
       - frontend_nextauth_secret

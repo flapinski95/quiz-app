@@ -6,9 +6,11 @@ RUN npm install
 # --- Builder: build ze 100% czystym środowiskiem i sprawdzonymi zmiennymi
 FROM node:20-alpine AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_GATEWAY_URL
+ARG NEXT_PUBLIC_KEYCLOAK_URL
 
-ENV NEXT_PUBLIC_KEYCLOAK_URL=http://auth.localhost
-
+ENV NEXT_PUBLIC_GATEWAY_URL=$NEXT_PUBLIC_GATEWAY_URL
+ENV NEXT_PUBLIC_KEYCLOAK_URL=$NEXT_PUBLIC_KEYCLOAK_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 

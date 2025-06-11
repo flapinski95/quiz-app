@@ -100,7 +100,7 @@ export default function UserProfilePage() {
           {!isEditing ? (
             <div style={{ marginTop: '1rem' }}>
               <button className={styles.submitBtn} onClick={() => setIsEditing(true)}>Edytuj Bio</button>
-              <button className={styles.submitBtn} onClick={() => window.open('http://localhost/auth/realms/quiz-app/account', '_blank')}>
+              <button className={styles.submitBtn} onClick={() => window.open('http://auth.localhost/realms/quiz-app/account', '_blank')}>
                 Zarządzaj kontem
               </button>
               <button className={styles.submitBtn} onClick={() => keycloak.logout()}>Wyloguj</button>

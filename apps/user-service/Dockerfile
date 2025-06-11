@@ -17,7 +17,7 @@ EXPOSE 3002
 
 COPY --from=builder /app /app
 
-CMD ["npx", "nodemon", "src/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npx nodemon src/index.js"]
 
 FROM node:20-alpine AS prod
 WORKDIR /app

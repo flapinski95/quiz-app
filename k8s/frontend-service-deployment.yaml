@@ -36,7 +36,7 @@ spec:
               value: "3000"
             - name: NEXT_PUBLIC_KEYCLOAK_URL
               value: http://auth.localhost
-          image: flapinski95/frontend-service:k8s_test
+          image: flapinski95/frontend-service:fixed-gateway-url
           name: frontend-service
           ports:
             - containerPort: 3000

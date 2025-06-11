@@ -36,14 +36,19 @@ spec:
                   key: quiz-session-quiz-service-url
           image: flapinski95/quiz-session-service:k8s_test
           livenessProbe:
-            exec:
-              command:
-                - curl
-                - -f
-                - http://localhost:3004/health
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 5
+            periodSeconds: 10
             failureThreshold: 3
-            periodSeconds: 30
-            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
           name: quiz-session-service
           ports:
             - containerPort: 3004

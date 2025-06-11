@@ -24,8 +24,11 @@ spec:
         - env:
             - name: ADMIN_CLIENT_ID
               value: admin-cli
-            - name: ADMIN_CLIENT_SECRET_FILE
-              value: /run/secrets/gateway-admin-client-secret
+            - name: ADMIN_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-admin-client-secret
+                  key: gateway-admin-client-secret
             - name: DEBUG
               value: keycloak-connect:* npm start
             - name: KEYCLOAK_FRONTEND_URL
@@ -44,7 +47,7 @@ spec:
               value: http://quiz-session-service:3004
             - name: USER_SERVICE_URL
               value: http://user-service:3002
-          image: flapinski95/gateway-service:k8s_test
+          image: flapinski95/gateway-service:cors-fixed-finalerer
           livenessProbe:
             exec:
               command:

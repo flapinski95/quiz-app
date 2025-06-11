@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const jwksRsa = require("jwks-rsa");
 
 const client = jwksRsa({
-  jwksUri: "http://keycloak:8080/realms/quiz-app/protocol/openid-connect/certs",
+  jwksUri: "http://auth.localhost/realms/quiz-app/protocol/openid-connect/certs",
   cache: true,
   rateLimit: true,
 });
@@ -45,7 +45,7 @@ module.exports = (req, res, next) => {
     token,
     getKey,
     {
-      issuer: "http://localhost/auth/realms/quiz-app",
+      issuer: "http://auth.localhost/realms/quiz-app",
       algorithms: ["RS256"],
       audience: ["account"],
     },
@@ -59,6 +59,7 @@ module.exports = (req, res, next) => {
         keycloakId: decoded.sub,
         email: decoded.email,
         roles: decoded.realm_access?.roles || [],
+        username: decoded.preferred_username || decoded.name || decoded.email?.split('@')[0] || 'anonymous'
       };
 
       console.log("[verifyToken] Użytkownik:", req.user);
