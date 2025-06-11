@@ -29,13 +29,21 @@ spec:
             - name: NEXTAUTH_URL
               value: http://frontend-service:3000
             - name: NEXT_PUBLIC_GATEWAY_URL
-              value: http://gateway-service:3001
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: GATEWAY_URL
             - name: NEXT_PUBLIC_USER_API_URL
-              value: http://user-service:3002
-            - name: PORT
-              value: "3000"
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: USER_SERVICE_URL
             - name: NEXT_PUBLIC_KEYCLOAK_URL
-              value: http://auth.localhost
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: KEYCLOAK_URL
+     
           image: flapinski95/frontend-service:fixed-gateway-url
           name: frontend-service
           ports:

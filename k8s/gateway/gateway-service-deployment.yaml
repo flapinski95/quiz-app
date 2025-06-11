@@ -30,33 +30,37 @@ spec:
                   name: gateway-admin-client-secret
                   key: gateway-admin-client-secret
             - name: DEBUG
-              value: keycloak-connect:* npm start
+              value: keycloak-connect:* 
             - name: KEYCLOAK_FRONTEND_URL
               value: http://auth.localhost
             - name: NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
               value: frontend
-            - name: NEXT_PUBLIC_KEYCLOAK_REALM
-              value: quiz-app
             - name: NEXT_PUBLIC_KEYCLOAK_URL
-              value: http://auth.localhost
-            - name: PORT
-              value: "3001"
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: KEYCLOAK_URL
+            - name: NEXT_PUBLIC_KEYCLOAK_REALM
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: KEYCLOAK_REALM
             - name: QUIZ_SERVICE_URL
-              value: http://quiz-service:3003
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: QUIZ_SERVICE_URL
             - name: SESSION_SERVICE_URL
               value: http://quiz-session-service:3004
             - name: USER_SERVICE_URL
               value: http://user-service:3002
           image: flapinski95/gateway-service:cors-fixed-finalerer
           livenessProbe:
-            exec:
-              command:
-                - curl
-                - -f
-                - http://localhost:3001/health
-            failureThreshold: 3
-            periodSeconds: 30
-            timeoutSeconds: 10
+            httpGet:
+              path: /healthz
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 10
           name: gateway-service
           ports:
             - containerPort: 3001

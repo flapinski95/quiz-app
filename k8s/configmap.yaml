@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  KEYCLOAK_URL: http://auth.localhost
+  KEYCLOAK_REALM: quiz-app
+  GATEWAY_URL: http://gateway-service:3001
+  USER_SERVICE_URL: http://user-service:3002
+  QUIZ_SERVICE_URL: http://quiz-service:3003
+  SESSION_SERVICE_URL: http://quiz-session-service:3004
