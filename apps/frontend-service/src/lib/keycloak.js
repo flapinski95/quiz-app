@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import Keycloak from 'keycloak-js';
 
 const keycloak = new Keycloak({

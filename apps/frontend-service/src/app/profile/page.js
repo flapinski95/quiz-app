@@ -91,19 +91,38 @@ export default function UserProfilePage() {
       <main className={styles.main}>
         <h1 className={styles.title}>Twój profil</h1>
         <div className={styles.card}>
-          <p><strong>Nazwa użytkownika:</strong> {username}</p>
-          <p><strong>Bio:</strong> {profile.bio || 'Brak opisu'}</p>
-          <p><strong>Średni wynik:</strong> {profile.averageScore.toFixed(2)}</p>
-          <p><strong>Łączny wynik:</strong> {profile.totalScore}</p>
-          <p><strong>Rozegrane quizy:</strong> {profile.totalQuizzesPlayed}</p>
+          <p>
+            <strong>Nazwa użytkownika:</strong> {username}
+          </p>
+          <p>
+            <strong>Bio:</strong> {profile.bio || 'Brak opisu'}
+          </p>
+          <p>
+            <strong>Średni wynik:</strong> {profile.averageScore.toFixed(2)}
+          </p>
+          <p>
+            <strong>Łączny wynik:</strong> {profile.totalScore}
+          </p>
+          <p>
+            <strong>Rozegrane quizy:</strong> {profile.totalQuizzesPlayed}
+          </p>
 
           {!isEditing ? (
             <div style={{ marginTop: '1rem' }}>
-              <button className={styles.submitBtn} onClick={() => setIsEditing(true)}>Edytuj Bio</button>
-              <button className={styles.submitBtn} onClick={() => window.open('http://localhost/auth/realms/quiz-app/account', '_blank')}>
+              <button className={styles.submitBtn} onClick={() => setIsEditing(true)}>
+                Edytuj Bio
+              </button>
+              <button
+                className={styles.submitBtn}
+                onClick={() =>
+                  window.open('http://localhost/auth/realms/quiz-app/account', '_blank')
+                }
+              >
                 Zarządzaj kontem
               </button>
-              <button className={styles.submitBtn} onClick={() => keycloak.logout()}>Wyloguj</button>
+              <button className={styles.submitBtn} onClick={() => keycloak.logout()}>
+                Wyloguj
+              </button>
             </div>
           ) : (
             <Formik initialValues={{ bio: profile.bio || '' }} onSubmit={handleProfileUpdate}>
@@ -117,7 +136,13 @@ export default function UserProfilePage() {
                     <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
                       {isSubmitting ? 'Zapisywanie...' : 'Zapisz'}
                     </button>
-                    <button type="button" className={styles.submitBtn} onClick={() => setIsEditing(false)}>Anuluj</button>
+                    <button
+                      type="button"
+                      className={styles.submitBtn}
+                      onClick={() => setIsEditing(false)}
+                    >
+                      Anuluj
+                    </button>
                   </div>
                 </Form>
               )}
@@ -132,13 +157,20 @@ export default function UserProfilePage() {
           ) : (
             <div className={styles.grid}>
               {userQuizzes.map((quiz) => (
-                <div key={quiz._id} className={styles.card} onClick={() => router.push(`/play/${quiz._id}`)}>
+                <div
+                  key={quiz._id}
+                  className={styles.card}
+                  onClick={() => router.push(`/play/${quiz._id}`)}
+                >
                   <strong>{quiz.title}</strong>
                   <p>{quiz.category || 'Brak kategorii'}</p>
-                  <button className={styles.submitBtn} onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteQuiz(quiz._id);
-                  }}>
+                  <button
+                    className={styles.submitBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteQuiz(quiz._id);
+                    }}
+                  >
                     Usuń
                   </button>
                 </div>

@@ -12,8 +12,8 @@ export default function QuizQuestion({ question, selected, onChange, onSubmit, i
                 type="checkbox"
                 checked={selected.includes(ans)}
                 onChange={() =>
-                  onChange(prev =>
-                    prev.includes(ans) ? prev.filter(a => a !== ans) : [...prev, ans]
+                  onChange((prev) =>
+                    prev.includes(ans) ? prev.filter((a) => a !== ans) : [...prev, ans]
                   )
                 }
               />
@@ -22,8 +22,12 @@ export default function QuizQuestion({ question, selected, onChange, onSubmit, i
           </li>
         ))}
       </ul>
-      <button className={styles.submitBtn} onClick={onSubmit}>Zatwierdź</button>
-      <p>Pytanie {index + 1} z {total}</p>
+      <button className={styles.submitBtn} onClick={onSubmit}>
+        Zatwierdź
+      </button>
+      <p>
+        Pytanie {index + 1} z {total}
+      </p>
     </div>
   );
 }

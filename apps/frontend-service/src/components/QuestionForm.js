@@ -14,7 +14,7 @@ export default function QuestionForm({ quizId, token, onQuestionAdded }) {
     options: ['', '', '', ''],
     correctAnswers: [],
     points: 1,
-    hint: ''
+    hint: '',
   };
 
   const validationSchema = Yup.object({
@@ -44,7 +44,11 @@ export default function QuestionForm({ quizId, token, onQuestionAdded }) {
   };
 
   return (
-    <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
       {({ values }) => (
         <Form className={styles.quizContainer}>
           <h3 className={styles.title}>Dodaj pytanie</h3>
@@ -55,7 +59,9 @@ export default function QuestionForm({ quizId, token, onQuestionAdded }) {
           <label>Typ pytania:</label>
           <Field as="select" name="type" className={styles.input}>
             {questionTypes.map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>
+                {t}
+              </option>
             ))}
           </Field>
 
@@ -104,7 +110,9 @@ export default function QuestionForm({ quizId, token, onQuestionAdded }) {
           <label>Podpowiedź (opcjonalnie):</label>
           <Field name="hint" placeholder="Podpowiedź" className={styles.input} />
 
-          <button type="submit" className={styles.submitBtn}>Dodaj pytanie</button>
+          <button type="submit" className={styles.submitBtn}>
+            Dodaj pytanie
+          </button>
         </Form>
       )}
     </Formik>

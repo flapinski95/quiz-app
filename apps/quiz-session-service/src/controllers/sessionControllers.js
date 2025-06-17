@@ -2,6 +2,7 @@ const axios = require('axios');
 const Session = require('../models/Session');
 
 const QUIZ_SERVICE_URL = process.env.QUIZ_SERVICE_URL || 'http://quiz-service:3003';
+const assignAchievements = require('../utils/achievementChecker');
 
 exports.startSession = async (req, res) => {
   try {
@@ -16,7 +17,7 @@ exports.startSession = async (req, res) => {
       userId,
       status: 'in-progress',
       answers: [],
-      startedAt: new Date()
+      startedAt: new Date(),
     });
 
     await session.save();
@@ -42,15 +43,16 @@ exports.submitAnswer = async (req, res) => {
     const questionRes = await axios.get(`${QUIZ_SERVICE_URL}/questions/${questionId}`);
     const question = questionRes.data;
 
-    const isCorrect = Array.isArray(question.correctAnswers)
-      && Array.isArray(selectedAnswers)
-      && selectedAnswers.length === question.correctAnswers.length
-      && selectedAnswers.every(ans => question.correctAnswers.includes(ans));
+    const isCorrect =
+      Array.isArray(question.correctAnswers) &&
+      Array.isArray(selectedAnswers) &&
+      selectedAnswers.length === question.correctAnswers.length &&
+      selectedAnswers.every((ans) => question.correctAnswers.includes(ans));
 
     session.answers.push({
       questionId,
       selectedAnswers,
-      isCorrect
+      isCorrect,
     });
 
     session.score = (session.score || 0) + (isCorrect ? question.points || 1 : 0);
@@ -59,7 +61,7 @@ exports.submitAnswer = async (req, res) => {
     res.json({
       correct: isCorrect,
       currentScore: session.score,
-      answeredQuestions: session.answers.length
+      answeredQuestions: session.answers.length,
     });
   } catch (err) {
     console.error('[submitAnswer] Błąd:', err.message);
@@ -96,16 +98,44 @@ exports.finishSession = async (req, res) => {
     session.status = 'finished';
     session.finishedAt = new Date();
     await session.save();
+
+    const quizRes = await axios.get(`${QUIZ_SERVICE_URL}/${session.quizId}`);
+    const quiz = quizRes.data;
+
+    let categoryName = null;
+    if (quiz.category) {
+      try {
+        const categoryRes = await axios.get(`${QUIZ_SERVICE_URL}/category/${quiz.category}`);
+        categoryName = categoryRes.data.name;
+      } catch (err) {
+        console.warn('[finishSession] Nie udało się pobrać nazwy kategorii:', err.message);
+      }
+    }
+
+    await axios.patch(`http://quiz-service:3003/quiz/${session.quizId}/increment-playcount`);
     await axios.patch(`http://user-service:3002/stats/${session.userId}`, {
       newScore: session.score,
     });
+
+    await axios.post('http://user-service:3002/history', {
+      userId: session.userId,
+      quizId: session.quizId,
+      category: categoryName || 'nieznana', 
+      score: session.score,
+      correctCount: session.answers.filter((a) => a.isCorrect).length,
+      totalCount: session.answers.length,
+    });
+
+    await assignAchievements(session);
+
     res.json({
       message: 'Quiz zakończony',
       totalScore: session.score,
       totalQuestions: session.answers.length,
-      correctAnswers: session.answers.filter(a => a.isCorrect).length
+      correctAnswers: session.answers.filter((a) => a.isCorrect).length,
     });
   } catch (err) {
+    console.error('[finishSession]', err.message);
     res.status(500).json({ message: 'Błąd przy zakończeniu sesji', error: err.message });
   }
 };

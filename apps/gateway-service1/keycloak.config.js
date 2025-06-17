@@ -1,15 +1,15 @@
 // const session = require('express-session');
 // const Keycloak = require('keycloak-connect');
 
-// const memoryStore = new session.MemoryStore(); 
+// const memoryStore = new session.MemoryStore();
 
 // const keycloakConfig = {
 //   clientId: 'frontend',
-//   bearerOnly: true,         
+//   bearerOnly: true,
 //   serverUrl: 'http://localhost:8080',
 //   realm: 'quiz-app',
 //   credentials: {
-//     secret: process.env.KEYCLOAK_CLIENT_SECRET  
+//     secret: process.env.KEYCLOAK_CLIENT_SECRET
 //   }
 // };
 

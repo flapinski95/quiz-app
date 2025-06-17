@@ -1,0 +1,40 @@
+name: CI – Quiz App bez testów
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Buduj kontenery docker-compose
+        run: docker compose build
+
+      - name: Uruchom docker-compose
+        run: docker compose up -d
+
+      - name: Czekaj aż usługi się uruchomią
+        run: sleep 15
+
+      - name: Healthcheck mikroserwisów
+        run: |
+          curl --fail http://localhost:3001/api/users/health || echo "user-service brak /health"
+          curl --fail http://localhost:3001/api/quizzes/health || echo "quiz-service brak /health"
+          curl --fail http://localhost:3001/api/sessions/health || echo "session-service brak /health"
+
+      - name: Logi z kontenerów
+        run: docker compose logs --tail=100
+
+      - name: Zatrzymaj kontenery
+        if: always()
+        run: docker compose down

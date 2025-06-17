@@ -9,7 +9,7 @@ exports.addQuestionToQuiz = async (req, res) => {
     await question.save();
 
     await Quiz.findByIdAndUpdate(quizId, {
-      $push: { questions: question._id }
+      $push: { questions: question._id },
     });
 
     res.status(201).json(question);
@@ -33,7 +33,7 @@ exports.deleteQuestion = async (req, res) => {
     if (!question) return res.status(404).json({ error: 'Question not found' });
 
     await Quiz.findByIdAndUpdate(question.quizId, {
-      $pull: { questions: question._id }
+      $pull: { questions: question._id },
     });
 
     res.json({ message: 'Question deleted' });

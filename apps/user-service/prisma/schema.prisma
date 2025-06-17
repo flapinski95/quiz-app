@@ -18,21 +18,23 @@ model UserProfile {
   averageScore        Float              @default(0.0)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
-
+  invitations String[]
   quizHistory         UserQuizHistory[]     
   topicStats          UserTopicStats[]     
   activeQuizzes       ActiveQuizSession[] 
+  achievements Achievement[]
 }
 model UserQuizHistory {
   id           String    @id @default(uuid())
   userId       String
-  quizId       String    
+  quizId       String   
+  category     String  
   score        Int
   correctCount Int
   totalCount   Int
   completedAt  DateTime  @default(now())
 
-  user   UserProfile @relation(fields: [userId], references: [id])
+  user   UserProfile @relation(fields: [userId], references: [keycloakId])
 
   @@index([userId])
   @@index([quizId])
@@ -58,4 +60,16 @@ model ActiveQuizSession {
   user UserProfile @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+model Achievement {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  earnedAt    DateTime     @default(now())
+  userId      String
+
+  user        UserProfile  @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@unique([userId, name]) 
 }

@@ -1,11 +1,11 @@
 'use client';
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useKeycloakContext } from "@/context/KeycloakContext";
-import Header from "@/components/Header";
-import styles from "../page.module.css";
-import api from "@/lib/axios";
-import Link from "next/link";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useKeycloakContext } from '@/context/KeycloakContext';
+import Header from '@/components/Header';
+import styles from '../page.module.css';
+import api from '@/lib/axios';
+import Link from 'next/link';
 
 export default function HomePage() {
   const { keycloak, authenticated, setAuthenticated, loading } = useKeycloakContext();
@@ -17,8 +17,8 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !authenticated && router.pathname !== "/") {
-      router.push("/");
+    if (!loading && !authenticated && router.pathname !== '/') {
+      router.push('/');
     }
   }, [authenticated, loading]);
 
@@ -49,19 +49,20 @@ export default function HomePage() {
 
   const totalPages = Math.ceil(total / limit);
 
-  if (loading || !authenticated || loadingQuizzes) return <p className={styles.loading}>Ładowanie...</p>;
+  if (loading || !authenticated || loadingQuizzes)
+    return <p className={styles.loading}>Ładowanie...</p>;
 
   return (
     <div className={styles.container}>
       <Header />
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Witaj, {keycloak.tokenParsed?.preferred_username || "Użytkowniku"}!
+          Witaj, {keycloak.tokenParsed?.preferred_username || 'Użytkowniku'}!
         </h1>
         <button
           className={styles.logoutButton}
           onClick={() => {
-            keycloak.logout({ redirectUri: "http://localhost:3000" });
+            keycloak.logout({ redirectUri: 'http://localhost:3000' });
           }}
         >
           Wyloguj
@@ -95,7 +96,9 @@ export default function HomePage() {
             >
               ◀ Poprzednia
             </button>
-            <span>Strona {page} z {totalPages}</span>
+            <span>
+              Strona {page} z {totalPages}
+            </span>
             <button
               onClick={() => {
                 if (page < totalPages) fetchQuizzes(page + 1);

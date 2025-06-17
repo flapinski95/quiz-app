@@ -26,7 +26,7 @@ export default function QuizForm() {
   const handleQuizSubmit = async (values) => {
     const quizData = {
       ...values,
-      tags: values.tags.split(',').map(tag => tag.trim()),
+      tags: values.tags.split(',').map((tag) => tag.trim()),
     };
 
     try {
@@ -42,7 +42,7 @@ export default function QuizForm() {
   };
 
   const handleQuestionAdded = () => {
-    setQuestionCount(prev => prev + 1);
+    setQuestionCount((prev) => prev + 1);
   };
 
   return (
@@ -79,7 +79,9 @@ export default function QuizForm() {
               <Field type="checkbox" name="isPublic" />
 
               <br />
-              <button type="submit" className={styles.submitBtn}>Utwórz quiz</button>
+              <button type="submit" className={styles.submitBtn}>
+                Utwórz quiz
+              </button>
             </Form>
           )}
         </Formik>
@@ -93,7 +95,7 @@ export default function QuizForm() {
             onQuestionAdded={handleQuestionAdded}
           />
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = '/')}
             className={styles.logoutButton}
             style={{ marginTop: '20px' }}
           >

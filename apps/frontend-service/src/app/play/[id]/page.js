@@ -25,9 +25,13 @@ export default function PlayQuizPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const sessionRes = await api.post(`/api/sessions/start/${id}`, {}, {
-          headers: { Authorization: `Bearer ${keycloak.token}` },
-        });
+        const sessionRes = await api.post(
+          `/api/sessions/start/${id}`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${keycloak.token}` },
+          }
+        );
         setSession(sessionRes.data);
 
         const questionsRes = await api.get(`/api/quizzes/${id}/questions`, {
@@ -45,20 +49,28 @@ export default function PlayQuizPage() {
   const handleSubmit = async () => {
     const question = questions[currentIndex];
     try {
-      await api.post(`/api/sessions/${session._id}/answer`, {
-        questionId: question._id,
-        selectedAnswers: selected,
-      }, {
-        headers: { Authorization: `Bearer ${keycloak.token}` },
-      });
+      await api.post(
+        `/api/sessions/${session._id}/answer`,
+        {
+          questionId: question._id,
+          selectedAnswers: selected,
+        },
+        {
+          headers: { Authorization: `Bearer ${keycloak.token}` },
+        }
+      );
 
       if (currentIndex + 1 < questions.length) {
         setCurrentIndex(currentIndex + 1);
         setSelected([]);
       } else {
-        const res = await api.post(`/api/sessions/${session._id}/finish`, {}, {
-          headers: { Authorization: `Bearer ${keycloak.token}` },
-        });
+        const res = await api.post(
+          `/api/sessions/${session._id}/finish`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${keycloak.token}` },
+          }
+        );
         setResult(res.data);
       }
     } catch (err) {
@@ -66,7 +78,8 @@ export default function PlayQuizPage() {
     }
   };
 
-  if (loading || !session || questions.length === 0) return <p className={styles.loading}>Ładowanie...</p>;
+  if (loading || !session || questions.length === 0)
+    return <p className={styles.loading}>Ładowanie...</p>;
   if (result) return <ResultSummary result={result} />;
 
   return (

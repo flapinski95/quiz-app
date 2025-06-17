@@ -17,45 +17,48 @@ const answerSchema = new mongoose.Schema({
   answeredAt: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
 
-const sessionSchema = new mongoose.Schema({
-  quizId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'Quiz',
+const sessionSchema = new mongoose.Schema(
+  {
+    quizId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'Quiz',
+    },
+    userId: {
+      type: String,
+      required: true,
+    },
+    startedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    pausedAt: Date,
+    resumedAt: Date,
+    finishedAt: Date,
+    status: {
+      type: String,
+      enum: ['in-progress', 'paused', 'finished'],
+      default: 'in-progress',
+    },
+    currentQuestion: {
+      type: Number,
+      default: 0,
+    },
+    answers: {
+      type: [answerSchema],
+      default: [],
+    },
+    score: {
+      type: Number,
+      default: 0,
+    },
+    expiresAt: { type: Date },
   },
-  userId: {
-    type: String,
-    required: true, 
-  },
-  startedAt: {
-    type: Date,
-    default: Date.now,
-  },
-  pausedAt: Date,
-  resumedAt: Date,
-  finishedAt: Date,
-  status: {
-    type: String,
-    enum: ['in-progress', 'paused', 'finished'],
-    default: 'in-progress',
-  },
-  currentQuestion: {
-    type: Number,
-    default: 0,
-  },
-  answers: {
-    type: [answerSchema],
-    default: [],
-  },
-  score: {
-    type: Number,
-    default: 0,
-  },
-  expiresAt: { type: Date }
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 sessionSchema.index({ userId: 1 });
 sessionSchema.index({ quizId: 1 });
